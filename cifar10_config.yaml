@@ -1,0 +1,31 @@
+bab:
+  get_upper_bound: true
+  timeout: 300
+data:
+  dataset: cifar10
+  mean:
+  - 0.5
+  - 0.5
+  - 0.5
+  std:
+  - 0.5
+  - 0.5
+  - 0.5
+general:
+  complete_verifier: bab
+  device: cpu
+  enable_incomplete_verification: true
+model:
+  name: cifar10
+  path: cifar10_model.onnx
+solver:
+  alpha-crown:
+    iteration: 100
+    lr_alpha: 0.1
+  batch_size: 64
+  beta-crown:
+    iteration: 50
+    lr_beta: 0.05
+specification:
+  epsilon: 0.01
+  norm: inf

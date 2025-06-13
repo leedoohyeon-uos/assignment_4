@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  abcrown-verification:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: abcrown-external:latest
+    container_name: abcrown-verification
+    
+    # GPU 지원 (NVIDIA Container Toolkit 필요)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    
+    # 볼륨 마운트
+    volumes:
+      - ./data:/workspace/data
+      - ./results:/workspace/results
+      - ./models:/workspace/models
+      - ./logs:/workspace/logs
+    
+    # 환경 변수
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - PYTHONPATH=/workspace
+      - OMP_NUM_THREADS=4
+      - PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
+    
+    # 작업 디렉토리
+    working_dir: /workspace
+    
+    # 기본 명령어 (대화형 모드)
+    command: /bin/bash
+    
+    # TTY 및 STDIN 활성화
+    tty: true
+    stdin_open: true
+    
+    # 포트 포워딩 (Jupyter Notebook 등)
+    ports:
+      - "8888:8888"
+    
+    # 메모리 제한
+    mem_limit: 16g
+    memswap_limit: 16g
+    
+    # 재시작 정책
+    restart: unless-stopped
+
+  # 모니터링 서비스 (선택사항)
+  monitoring:
+    image: nvidia/dcgm-exporter
+    container_name: gpu-monitoring
+    cap_add:
+      - SYS_ADMIN
+    ports:
+      - "9400:9400"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+# 네트워크 설정
+networks:
+  default:
+    driver: bridge
+
+# 볼륨 정의
+volumes:
+  data:
+    driver: local
+  results:
+    driver: local
+  models:
+    driver: local
+  logs:
+    driver: local
